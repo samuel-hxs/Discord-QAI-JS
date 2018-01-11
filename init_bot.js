@@ -10,4 +10,8 @@ client.on('ready', () => {
 	client.user.setGame(`with the Seven Hand Node.`);
 });
 
+function log(message){
+	console.log(message);
+}
+
 client.login(config.token);
