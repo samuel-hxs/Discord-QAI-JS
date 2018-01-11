@@ -1,4 +1,7 @@
 //EXPORTS AT EOF
+const settings = require("../sys/settings.json");
+const fs = require("fs");
+const mkdirp = require("mkdirp");
 
 ////////////////
 /// LOG FUNCTION
@@ -36,7 +39,7 @@ function log(message, type="--", guild=undefined){
 			if (guild != undefined && guild.id != undefined){
 				id = guild.id;
 			}
-			const path = logDir+"/"+id+"/";
+			const path = "../logs/"+id+"/";
 			const fullPath = path+(guildName)+"."+time(true)+".log";
 			
 			if (!fs.existsSync(path)){
@@ -55,6 +58,9 @@ function log(message, type="--", guild=undefined){
 	}
 }
 
+
+
+//Utils i'll comment later
 
 function padZero(str, len) {
     len = len || 2;
@@ -132,10 +138,5 @@ module.exports = {
 		if (true || type !="DD"){
 			log(message, type, guild);
 		}
-	},
-	
-	invertColor:
-	function(hex){
-		return invertColor(hex);
 	}
 }

@@ -18,6 +18,8 @@
   "homepage": "https://github.com/JJ173/Discord-QAI-JS#readme",
   "dependencies": {
     "discord.js": "^11.2.1",
+    "fs": "0.0.1-security",
+    "mkdirp": "^0.5.1",
     "node-opus": "^0.2.7",
     "rword": "^2.2.0",
     "sqlite": "^2.8.0",
