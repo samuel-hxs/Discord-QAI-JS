@@ -1,0 +1,26 @@
+{
+  "name": "discord-qai-js",
+  "version": "1.0.0",
+  "description": "Discord QAI JS",
+  "main": "init_qai.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JJ173/Discord-QAI-JS.git"
+  },
+  "author": "JJ173",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JJ173/Discord-QAI-JS/issues"
+  },
+  "homepage": "https://github.com/JJ173/Discord-QAI-JS#readme",
+  "dependencies": {
+    "discord.js": "^11.2.1",
+    "node-opus": "^0.2.7",
+    "rword": "^2.2.0",
+    "sqlite": "^2.8.0",
+    "sqlite3": "^3.1.13"
+  }
+}
