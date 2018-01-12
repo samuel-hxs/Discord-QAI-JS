@@ -37,9 +37,9 @@ function log(message, type="--", guild=undefined){
 		if (guild /*&& getSetting(guild, "write-logs")*/){
 			let id = 0;
 			if (guild != undefined && guild.id != undefined){
-				id = guild.id;
+				id = guild.id+'-'+makeLong(guildName, 8);
 			}
-			const path = "../logs/"+id+"/";
+			const path = "./logs/"+id+"/";
 			const fullPath = path+(guildName)+"."+time(true)+".log";
 			
 			if (!fs.existsSync(path)){
