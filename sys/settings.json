@@ -1,6 +1,6 @@
 {
   "debug-mode": false,
-  "dev-only-mode": true,
+  "dev-only-mode": false,
   "devs": [125055986632228865, 142367571256147968],
   "prefixes": ["!", "QAI!", "QAIx!"],
   "write-logs": true
