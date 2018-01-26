@@ -23,7 +23,6 @@
     "node-opus": "^0.2.7",
     "package.json": "^2.0.1",
     "rword": "^2.2.0",
-    "sqlite": "^2.8.0",
-    "sqlite3": "^3.1.13"
+    "sqlite": "^2.9.1"
   }
 }
