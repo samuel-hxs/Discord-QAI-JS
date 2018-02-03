@@ -4,6 +4,7 @@ const client = new Discord.Client();
 const fs = require("fs");
 const sqlite3 = require('sqlite3').verbose();
 
+
 //UTILS
 const utils = require('./utils/funcs.js');
 const behavior = require('./utils/reactions.js');
