@@ -28,6 +28,12 @@ client.on('disconnect', () => {
   utils.log('QAIx has disconnected', 'WW');
 });
 
+//ON GUILD MEMBER ADD
+client.on('guildMemberAdd', guildMember=>{
+	utils.log('User "'+guildMember.user.username+'" joined the guild', 'TR', guildMember.guild);
+	utils.track(guildMember);
+});
+
 //ON MESSAGE
 client.on('message', message => {
 	//SAFETY

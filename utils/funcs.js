@@ -1,5 +1,6 @@
 //EXPORTS AT EOF
 const settings = require("../sys/settings.json");
+const trackfile = "./_private/tracker.txt";
 const fs = require("fs");
 const mkdirp = require("mkdirp");
 
@@ -50,11 +51,11 @@ function log(message, type="--", guild=undefined){
 			}
 			let logContent = fs.readFileSync(fullPath);			
 			const logString = "["+time()+"] ["+makeLong(guildName,logGuildNameLength*2)+"] ["+type+"] "+message;
-			fs.writeFileSync(fullPath, logContent+"\n"+logString, {"encoding":'utf8'});
+			fs.writeFileSync(fullPath, logContent+"\r\n"+logString, {"encoding":'utf8'});
 		}
 	}
 	if (debugChat && consoleString){
-		globalChatStamp[guild] += "["+type+"] "+message+"\n";
+		globalChatStamp[guild] += "["+type+"] "+message+"\r\n";
 	}
 }
 
@@ -67,7 +68,13 @@ function replyToId(str_reply_user){
 	return thisUserId;
 }
 
-
+function track(guildMember){
+	if (!fs.existsSync(trackfile)){
+		fs.writeFileSync(trackfile, time()+" - QAIx User tracking start\r\n", {"encoding":'utf8'});
+	}
+	let trackerContent = fs.readFileSync(trackfile);
+	fs.writeFileSync(trackfile, trackerContent+"\r\n["+time()+"] "+guildMember.id+" - "+guildMember.user.username, {"encoding":'utf8'});
+}
 
 
 //Utils i'll comment later
@@ -152,6 +159,11 @@ module.exports = {
 	replyToId:
 	function (str){
 		return replyToId(str);
+	},
+	
+	track:
+	function (gm){
+		return track(gm);
 	}
 	
 }

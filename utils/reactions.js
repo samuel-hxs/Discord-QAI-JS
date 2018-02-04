@@ -5,7 +5,10 @@ const sqlite3 = require('sqlite3').verbose();
 //UTILS
 const utils = require('./funcs.js');
 const databaseFile = './_private/userdata.db';  
+const trackerfile = './_private/tracker.txt';
 let db = new sqlite3.Database(databaseFile);  
+
+const Attachment = require('discord.js').Attachment;
 
 //EXPORTS AT EOF
 
@@ -27,6 +30,19 @@ function react(message){
 	switch (msgString){
 		default:
 			return null; //null => nothing happened
+			break;
+			
+		case "sendtracker":
+			if (fs.existsSync(trackerfile)){
+				message.author.channel.send({ files: [new Attachment(trackerfile)] });
+				utils.log("Sent trackerfile to "+message.author.username+"", "--", message.guild);
+				return true;
+			}
+			else {
+				sendMessage(message.author.channel, "No trackerfile to send!");
+				utils.log("No trackerfile to send to "+message.author.username+"", "--", message.guild);
+				return true;
+			}
 			break;
 			
 		case "addpoints":
