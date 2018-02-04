@@ -58,10 +58,19 @@ function log(message, type="--", guild=undefined){
 	}
 }
 
+function replyToId(str_reply_user){
+	
+	let thisUserId = str_reply_user.substring(2, str_reply_user.length-1);
+	if (thisUserId.charAt(0) == "!"){
+		thisUserId = thisUserId.substring(1, thisUserId.length);
+	}
+	return thisUserId;
+}
+
+
 
 
 //Utils i'll comment later
-
 function padZero(str, len) {
     len = len || 2;
     var zeros = new Array(len).join('0');
@@ -138,5 +147,11 @@ module.exports = {
 		if (true || type !="DD"){
 			log(message, type, guild);
 		}
+	},
+	
+	replyToId:
+	function (str){
+		return replyToId(str);
 	}
+	
 }
