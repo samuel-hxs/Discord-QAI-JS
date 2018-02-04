@@ -73,7 +73,7 @@ function track(guildMember){
 		fs.writeFileSync(trackfile, time()+" - QAIx User tracking start\r\n", {"encoding":'utf8'});
 	}
 	let trackerContent = fs.readFileSync(trackfile);
-	fs.writeFileSync(trackfile, trackerContent+"\r\n["+time()+"] "+guildMember.id+" - "+guildMember.user.username, {"encoding":'utf8'});
+	fs.writeFileSync(trackfile, trackerContent+"\r\n["+time()+"] "+guildMember.guild.name+" - "+guildMember.id+" - "+guildMember.user.username, {"encoding":'utf8'});
 }
 
 

@@ -34,12 +34,12 @@ function react(message){
 			
 		case "sendtracker":
 			if (fs.existsSync(trackerfile)){
-				message.author.channel.send({ files: [new Attachment(trackerfile)] });
+				message.author.send({ files: [new Attachment(trackerfile)] });
 				utils.log("Sent trackerfile to "+message.author.username+"", "--", message.guild);
 				return true;
 			}
 			else {
-				sendMessage(message.author.channel, "No trackerfile to send!");
+				sendMessage(message.author, "No trackerfile to send!");
 				utils.log("No trackerfile to send to "+message.author.username+"", "--", message.guild);
 				return true;
 			}
