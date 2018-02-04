@@ -29,32 +29,48 @@ function react(message){
 			return null; //null => nothing happened
 			break;
 			
-		/*
 		case "addpoints":
 			if (argument == null){
 				return false;
 			}
 			else{
-				let id = utils.replyToId(argument);
-				addPoints(db, id, function
-				getPoints(db, id, function(int_points){
-					sendMessage(message.channel, "<@"+id+"> has "+int_points+" points");
+				//Determining user amount
+				let pointsToGive = 0;
+				let usersToGive = [];
+				
+				const argArr = argument.split(" ");
+				
+				if (argArr.length > 0){
+					pointsToGive = argArr[0];
+				}
+				let replyList = [];
+				if (argArr.length > 1){
+					for (let i = 1; i < argArr.length; i++){
+						thisUserId = utils.replyToId(argArr[i]);
+						usersToGive.push(thisUserId);
+						replyList.push(argArr[i]);
+					}
+				}
+				addPoints(db, usersToGive, parseFloat(pointsToGive), function(){
+					sendMessage(message.channel, "Added "+(pointsToGive)+" points to "+replyList.join(" ")+"");
 				});
 				return true;
 			}
-			break;	*/
+			break;
 			
 		case "getpoints":
+		case "level":
+			let id = 0;
 			if (argument == null){
-				return false;
+				id = message.author.id;
 			}
 			else{
-				let id = utils.replyToId(argument);
-				getPoints(db, id, function(int_points){
-					sendMessage(message.channel, "<@"+id+"> has "+int_points+" points");
-				});
-				return true;
+				id = utils.replyToId(argument);
 			}
+			getPoints(db, id, function(int_points){
+				sendMessage(message.channel, "<@"+id+"> has "+int_points+" points");
+			});
+			return true;
 			
 			break;
 		
@@ -136,6 +152,33 @@ function sendMessage(channel, msgString){
     channel.send(msgString);
 	return true;
 }
+function addPoints (database, userList, int_points, function_callback){
+	for (let i = 0; i < userList.length; i++){
+		let fakeList = [];
+		fakeList.push(userList[i]);
+		if (i == userList.length-1){
+			getPoints(database, userList[i], function(pointsStock){
+				if (!isNaN(int_points)){
+					setPoints(database, fakeList, pointsStock+int_points, function(){
+						function_callback()});
+				}
+				else{
+					utils.log("Error while adding "+int_points+" to user "+userList[i]+"", "><");
+				}
+			});
+		}
+		else{
+			getPoints(database, userList[i], function(pointsStock){
+				if (!isNaN(int_points)){
+					setPoints(database, fakeList, pointsStock+int_points, function(){});
+				}
+				else{
+					utils.log("Error while adding "+int_points+" to user "+userList[i]+"", "><");
+				}
+			});
+		}
+	}
+}
 function setPoints(database, userList, int_points, function_callback){
 	
 	database.run("CREATE TABLE IF NOT EXISTS users (`id` INT PRIMARY KEY NOT NULL, `points` INT)", function(){
@@ -200,5 +243,9 @@ module.exports = {
    react: 
 	function(message){
 		return react(message);
+	},
+   addPoints: 
+	function(database, userList, int_points){
+		addPoints(database, userList, int_points, function(){});
 	},
 }

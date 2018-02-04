@@ -12,6 +12,8 @@ const behavior = require('./utils/reactions.js');
 //CONFIG
 const config = require('./_private/config.json');
 const settings = require('./sys/settings.json');
+const databaseFile = './_private/userdata.db';  
+let db = new sqlite3.Database(databaseFile);  
 
 utils.log('QAIx fired ! Preparing...');
 
@@ -35,6 +37,7 @@ client.on('message', message => {
 	}
 	
 	const msgString = message.content;
+	let issuedCommand = false;
 	
 	//////////////////////
 	// INPUT DETECTION
@@ -62,6 +65,7 @@ client.on('message', message => {
 			}
 			if (canDo){
 				utils.log("Reacting to ["+msgString+"] ...", "..", message.guild);
+				issuedCommand = true;
 				const reaction = behavior.react(message);
 				if (reaction == false){
 					utils.log("...failed!", "WW", message.guild);
@@ -75,6 +79,15 @@ client.on('message', message => {
 			}
 			break;
 		}
+	}
+	
+	//////////////////////
+	// POINT-ADDING BEHAVIOR
+	//////////////////////
+	if (!issuedCommand){
+		let fakeList = [];
+		fakeList.push(message.author.id);
+		behavior.addPoints(db, fakeList, message.content.length);
 	}
 });
 
