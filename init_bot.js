@@ -32,6 +32,12 @@ client.on('disconnect', () => {
 client.on('guildMemberAdd', guildMember=>{
 	utils.log('User "'+guildMember.user.username+'" joined the guild', 'TR', guildMember.guild);
 	utils.track(guildMember);
+
+	//Drop a message for the new users.
+	let channel = client.channels.get("408555951382200321");
+	channel.send(`Welcome ${guildMember.toString()}! Feel free to introduce yourself to the community. :slight_smile:`);
+
+	guildMember.send("Hello and Welcome to the **FAF Discord Server**. We are quite active and are happy to help with any problems you may have. \n\n__**Useful Links**__\nForums: http://forums.faforever.com/index.php \nWiki: https://wiki.faforever.com/index.php?title=Main_Page \nClient Download: https://faforever.com/client");
 });
 
 //ON MESSAGE

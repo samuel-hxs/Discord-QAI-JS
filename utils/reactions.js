@@ -10,6 +10,9 @@ let db = new sqlite3.Database(databaseFile);
 
 const Attachment = require('discord.js').Attachment;
 
+//GAMES
+const hangmanGame = require('../games/hangman.js');
+
 //EXPORTS AT EOF
 
 ////////////////
@@ -93,7 +96,7 @@ function react(message){
 		case "setpoints":
 			if (argument == null){
 				setPoints(db, message.author.id, 0, function(){
-						sendMessage(message.channel, "Resetted points for "+message.author.username+"");
+						sendMessage(message.channel, "Reset points for "+message.author.username+"");
 					});
 			}
 			else{
@@ -154,6 +157,11 @@ function react(message){
 				return false;
 			}
 			break;
+		case "help":
+			sendMessage(message.author, "Hi there! I have a documentation on our Wiki :slight_smile:. Wiki Article for QAI: *Link here*.");
+			break;
+		case "hangman":
+			hangmanGame.handleGameCommand(message, argument);
 	}
 }
 ////////////
