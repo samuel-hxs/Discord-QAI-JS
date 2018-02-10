@@ -1,6 +1,7 @@
 //LIBS
 const fs = require("fs");
 const sqlite3 = require('sqlite3').verbose();
+const https = require('https');
 
 //UTILS
 const utils = require('./funcs.js');
@@ -29,10 +30,227 @@ function react(message){
 		msgString = msgString.substring(0, index);
 		utils.log("...after argument removal, reacting to "+msgString+"["+argument+"]...", "..", message.guild);
 	}
-
+	
+	//Commands made more easy
+	mstString = msgString.toLowerCase();
+	//endof
+	
 	switch (msgString){
 		default:
 			return null; //null => nothing happened
+			break;
+			
+		case "searchplayer":
+			if (argument == null){
+				return false;
+			}
+			else{
+				utils.log(message.author.username+" is performing an user search with term ["+argument+"]...", "..", message.guild);
+				const limit = 5;	//Only 5 results
+				//Character escaping
+				argument = argument.replace(/\\/g, "\\\\")
+			   .replace(/\$/g, "\\$")
+			   .replace(/'/g, "\\'")
+			   .replace(/"/g, "\\\"");
+			   
+			   
+				https.get('https://api.faforever.com/data/player?filter=login=='+argument+'*&page[limit]='+(limit+1)+'', (res) => {
+					
+					let ok = false;
+					switch (res.statusCode){
+						default:
+							ok = true;
+							break;
+							
+						case 403:
+							utils.log("Access forbidden ?! 403 - doing nothing.", "WW", message.guild);
+							break;
+							
+						case 404:
+							utils.log("Server not found ?! 404 - doing nothing.", "WW", message.guild);
+							break;
+							
+						case 500:
+							utils.log("Server error ?! 505 - doing nothing.", "WW", message.guild);
+							break;
+					}
+					if (ok){
+						res.on('data', (d) => {
+							const data = JSON.parse(d);
+							
+							if (data.data.length > 0){
+								let finalMsg = "Search results for "+argument+":\n```";
+								let maxQ = limit+1;
+								for (i = 0; i < Math.min(data.data.length, maxQ); i++){
+									const thisPlayer = data.data[i];
+									if (thisPlayer.type == "player"){
+										finalMsg += thisPlayer.attributes.login+"\n";
+									}
+									else{
+										maxQ++;
+										continue;
+									}
+								}
+								if (data.data.length > limit){
+									finalMsg += '...\n```Only the first '+limit+" results are displayed";
+								}
+								else{
+									finalMsg += '```';
+								}
+								return sendMessage(message.channel, finalMsg);
+							}
+							else{
+								utils.log("...no results!", "><", message.guild);
+								return sendMessage(message.channel, "No results for this player name.");
+							}
+						}).on('error', (e) => {
+							utils.log("HTTPS request returned following error : ["+(e)+"]. Doing nothing.", "WW", message.guild);
+						});
+					}
+				});
+			   
+			}
+			break;
+			
+			
+		case "player":
+			if (argument == null){
+				//utils.log(message.author.username+" command misuse, doing nothing.", "><", message.guild);
+				return false;
+			}
+			else{
+				utils.log(message.author.username+" is asking info about FAF Player ["+argument+"]...", "..", message.guild);
+				
+				//Character escaping
+				argument = argument.replace(/\\/g, "\\\\")
+			   .replace(/\$/g, "\\$")
+			   .replace(/'/g, "\\'")
+			   .replace(/"/g, "\\\"");
+			   ///end of
+			   
+			   //Single HTTPS-GET should get us everything we need
+				https.get('https://api.faforever.com/data/player?filter=login=='+argument+'&include=clanMemberships.clan,globalRating,ladder1v1Rating', (res) => {
+					//console.log('statusCode:', res.statusCode);
+					//console.log('headers:', res.headers);
+					let ok = false;
+					switch (res.statusCode){
+						default:
+							ok = true;
+							break;
+							
+						case 403:
+							utils.log("Access forbidden ?! 403 - doing nothing.", "WW", message.guild);
+							break;
+							
+						case 404:
+							utils.log("Server not found ?! 404 - doing nothing.", "WW", message.guild);
+							break;
+							
+						case 500:
+							utils.log("Server error ?! 505 - doing nothing.", "WW", message.guild);
+							break;
+					}
+					if (ok){
+						res.on('data', (d) => {
+							const data = JSON.parse(d);
+							if (data.data.length > 0){
+								utils.log("....found player ! Retrieving data...", "..", message.guild);
+								
+								let player = {
+									id : data.data[0].id,
+									name : data.data[0].attributes.login,
+									createTime : data.data[0].attributes.createTime,
+									updateTime : data.data[0].attributes.updateTime,
+									clans : [],
+									aliasesArr : data.data[0].relationships.names.data
+								}
+								
+								const inc = data.included;
+								
+								for (let i = 0; i < inc.length; i++){
+									let thisData = inc[i];
+									switch (thisData.type){
+										default:
+											continue;
+											break;
+										
+										case "clan":	
+											player.clans.push({
+												name: thisData.attributes.name,
+												tag: thisData.attributes.tag,
+												size: thisData.relationships.memberships.data.length,
+												websiteUrl: thisData.attributes.websiteUrl,
+											});
+											break;
+										
+										case "globalRating":	
+											player.global = {};
+											player.global.numGames = thisData.attributes.numgames;
+											player.global.rating = thisData.attributes.rating;
+											player.global.rank = thisData.attributes.rank;
+											break;
+										
+										case "ladder1v1Rating":	
+											player.ladder = {};
+											player.ladder.numGames = thisData.attributes.numgames;
+											player.ladder.rating = thisData.attributes.rating;
+											player.ladder.rank = thisData.attributes.rank;
+											break;
+									}
+								}
+								
+								let response = "Player info for ["+player.name+"]\n\n```";
+								
+								response+= "ID : "+player.id+"\n";
+								aliasString = "None";
+								/*
+								if (player.aliasesArr.length > 0){
+									aliasString = player.aliasesArr.join(",");
+								}
+								*/
+								response+= "ALIASES : "+aliasString+"\n";
+								
+								if (player.ladder){
+									response+= "\n- LADDER -\n";
+									response+= "Rating : "+player.ladder.rating+"\n";
+									//response+= "Games : "+player.ladder.numGames+"\n";
+									//response+= "Rank : #"+player.ladder.rank+"\n";
+								}
+								
+								if (player.global){
+									response+= "\n- GLOBAL -\n";
+									response+= "Rating : "+player.global.rating+"\n";
+									//response+= "Games : "+player.global.numGames+"\n";
+									//response+= "Rank : #"+player.global.rank+"\n";
+								}
+								
+								if (player.clans.length > 0){
+									response+= "\n- CLAN INFO -\n";
+									for (i = 0; i < player.clans.length; i++){
+										const thisClan = player.clans[i];
+										response+= "Name : "+thisClan.name+"["+thisClan.tag+"]\n";
+										response+= "Clan size : "+thisClan.size+"\n";
+										response+= "URL : "+thisClan.websiteUrl+"\n";
+										
+										response+="\n";
+									}
+								}
+								response += "```";
+								utils.log("...retrieved and returned full data in the guild.", "OK", message.guild);
+								return sendMessage(message.channel, response);
+							}
+							else{
+								utils.log("...non-existing player!", "><", message.guild);
+								return sendMessage(message.channel, "Requested player do not exist.");
+							}
+						});
+					}
+
+				}).on('error', (e) => {
+					utils.log("HTTPS request returned following error : ["+(e)+"]. Doing nothing.", "WW", message.guild);
+				});
+				return 1;
+			}
 			break;
 			
 		case "sendtracker":

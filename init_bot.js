@@ -42,6 +42,7 @@ client.on('guildMemberAdd', guildMember=>{
 
 //ON MESSAGE
 client.on('message', message => {
+	
 	//SAFETY
 	if (!message.guild){
 		utils.log('Received message from empty guild. Doing nothing.', '><');
@@ -79,13 +80,13 @@ client.on('message', message => {
 				utils.log("Reacting to ["+msgString+"] ...", "..", message.guild);
 				issuedCommand = true;
 				const reaction = behavior.react(message);
-				if (reaction == false){
+				if (reaction === false){
 					utils.log("...failed!", "WW", message.guild);
 				}
-				else if (reaction == null){
+				else if (reaction === null){
 					utils.log("...nothing to respond to that", "><", message.guild);
 				}
-				else{
+				else if (reaction === true){
 					utils.log("...end of interaction", "OK", message.guild);
 				}
 			}
@@ -99,7 +100,7 @@ client.on('message', message => {
 	if (!issuedCommand){
 		let fakeList = [];
 		fakeList.push(message.author.id);
-		behavior.addPoints(db, fakeList, message.content.length);
+		behavior.addPoints(db, fakeList, 1);
 	}
 });
 
