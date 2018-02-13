@@ -56,24 +56,26 @@ client.on('message', message => {
 	//////////////////////
 	// INPUT DETECTION
 	//////////////////////
-	
-	const grabs = Object.keys(settings.aliases);
-	
-	for (let i = 0; i < grabs.length; i++){	//Check if message includes one of the aliases
-		const thisAlias = grabs[i];
-		let validAlias = true;
+
+	if (settings.aliases != undefined && settings.aliases != null){
+		const grabs = Object.keys(settings.aliases);
 		
-		for (var j = 0; j < thisAlias.length; j++){
-			var thisChar = msgString.charAt(j);
-			var thisPrefChar = thisAlias.charAt(j);
-			if (thisChar != thisPrefChar){
-				validAlias = false;
+		for (let i = 0; i < grabs.length; i++){	//Check if message includes one of the aliases
+			const thisAlias = grabs[i];
+			let validAlias = true;
+			
+			for (var j = 0; j < thisAlias.length; j++){
+				var thisChar = msgString.charAt(j);
+				var thisPrefChar = thisAlias.charAt(j);
+				if (thisChar != thisPrefChar){
+					validAlias = false;
+				}
 			}
-		}
-		if (validAlias){
-			message.content = settings.aliases[thisAlias] + message.content.substring(thisAlias.length);
-			utils.log('Aliased '+msgString+' in '+message.content+' for command recognition - should be talking to me', '??', message.guild);
-			msgString = message.content;
+			if (validAlias){
+				message.content = settings.aliases[thisAlias] + message.content.substring(thisAlias.length);
+				utils.log('Aliased '+msgString+' in '+message.content+' for command recognition - should be talking to me', '??', message.guild);
+				msgString = message.content;
+			}
 		}
 	}
 		

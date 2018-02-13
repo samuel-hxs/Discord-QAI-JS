@@ -2,6 +2,7 @@
 const fs = require("fs");
 const sqlite3 = require('sqlite3').verbose();
 const https = require('https');
+const http = require('http');
 
 //UTILS
 const utils = require('./funcs.js');
@@ -53,10 +54,111 @@ function react(message){
 				return null; //null => nothing happened
 				break;
 				
+			case "unit":
+				utils.log(message.author.username+" is performing an unitDB search...", "..", message.guild);
+				//Character escaping
+				argument = argument.replace(/\\/g, "\\\\")
+			   .replace(/\$/g, "\\$")
+			   .replace(/'/g, "\\'")
+			   .replace(/"/g, "\\\"");
+			   
+			   const webAddress = "http://rk.sytes.net/scfa-unit-db/";
+				
+				httpFetch(webAddress+'api.php?searchunit='+argument+'', function(d){
+					if (Number.isInteger(d)){
+						return sendMessage(message.channel, "Server returned the error `"+d+"`.");
+					}
+					
+					const data = JSON.parse(d);
+					
+					if (data != undefined && data.BlueprintType != undefined && data.BlueprintType == "UnitBlueprint"){
+						
+						////NAME FORMAT
+						let cuteName = '';
+						if (data.General.UnitName != undefined){
+							cuteName = '"'+data.General.UnitName.replace(/<{1}[^<>]{1,}>{1}/g,"")+'" ';
+						}
+						
+						
+						let unit ={
+							id: data.Id,
+							name: ''+cuteName+''+data.Description.replace(/<{1}[^<>]{1,}>{1}/g,""),
+							previewUrl: webAddress+'IMG/PREVIEW/'+data.Id+'.png',
+							strategicUrl: webAddress+'IMG/STRATEGIC/'+data.StrategicIconName+'_rest.png',
+							economy : data.Economy,
+							hp: data.Defense.Health,
+							regen: data.Defense.RegenRate,
+							faction: data.General.FactionName,
+							abilities: data.Display.Abilities
+						}
+						
+						let embedMes = {
+							  "embed": {
+								"title": "**Click here to open unitDB**",
+								"description":"<:"+(unit.faction.toLowerCase())+":"+message.client.emojis.findKey("name",(unit.faction.toLowerCase()))+"> "+unit.faction+" - "+unit.id,
+								"url": webAddress+'index.php?id='+unit.id,
+								"color": getFactionColor(unit.faction),
+								"thumbnail": {
+								  "url": unit.previewUrl
+								},
+								"author": {
+								  "name": unit.name,
+								  "url": webAddress+'index.php?id='+unit.id,
+									"icon_url": unit.strategicUrl
+								},
+								"fields": [
+								  {
+									"name": "Defense",
+									"value": unit.hp+"+"+unit.regen+"/s HP",
+								  }
+								]
+							  }
+							}
+							
+							const keys = Object.keys(unit.economy);
+							for (let i = 0; i < keys.length; i++){
+								const field = unit.economy[keys[i]];
+								if (field.constructor === Array){
+									continue;
+								}
+								embedMes["embed"].fields.push({
+									"name": keys[i],
+									"value": field,
+									"inline":true
+								});
+							}
+							
+							if (unit.abilities != undefined){
+								let abilities = [];
+								for (let i = 0; i < unit.abilities.length; i++){
+									abilities.push(unit.abilities[i].replace(/<{1}[^<>]{1,}>{1}/g,""));
+								}
+								embedMes["embed"].fields.push({
+									"name": "Abilities",
+									"value": abilities.join("\n")
+								});
+							}
+						
+						
+						return sendMessage(message.channel, embedMes);
+						
+					}
+					else{
+						utils.log("...no results. EOI.", "><", message.guild);
+						return sendMessage(message.channel, "Unit not found");
+					}
+				});
+				break;
+				
 			case "wiki":
 				utils.log(message.author.username+" is performing a wiki search...", "..", message.guild);
+					//Character escaping
+					argument = argument.replace(/\\/g, "\\\\")
+				   .replace(/\$/g, "\\$")
+				   .replace(/'/g, "\\'")
+				   .replace(/"/g, "\\\"");
 				
-				httpFetch('https://wiki.faforever.com/api.php?action=query&list=search&srsearch='+argument+'&format=json&srlimit=1&srwhat=text', function(d){
+				httpsFetch('https://wiki.faforever.com/api.php?action=query&list=search&srsearch='+argument+'&format=json&srlimit=1&srwhat=text', function(d){
 					if (Number.isInteger(d)){
 						return sendMessage(message.channel, "Server returned the error `"+d+"`.");
 					}
@@ -100,7 +202,7 @@ function react(message){
 				
 			case "pool":
 				utils.log(message.author.username+" is asking info about FAF pool...", "..", message.guild);
-				httpFetch('https://api.faforever.com/data/ladder1v1Map?include=mapVersion.map', function(d){
+				httpsFetch('https://api.faforever.com/data/ladder1v1Map?include=mapVersion.map', function(d){
 					if (Number.isInteger(d)){
 						return sendMessage(message.channel, "Server returned the error `"+d+"`.");
 					}
@@ -191,7 +293,7 @@ function react(message){
 				   .replace(/'/g, "\\'")
 				   .replace(/"/g, "\\\"");
 				   
-				   httpFetch('https://api.faforever.com/data/game/'+argument+'?include=mapVersion,playerStats,mapVersion.map,playerStats.player,featuredMod,playerStats.player.globalRating,playerStats.player.ladder1v1Rating', function(d){
+				   httpsFetch('https://api.faforever.com/data/game/'+argument+'?include=mapVersion,playerStats,mapVersion.map,playerStats.player,featuredMod,playerStats.player.globalRating,playerStats.player.ladder1v1Rating', function(d){
 						if (Number.isInteger(d)){
 							return sendMessage(message.channel, "Server returned the error `"+d+"`.");
 						}
@@ -391,7 +493,7 @@ function react(message){
 				   
 					
 				   //Single HTTPS-GET should get us everything we need
-				   httpFetch('https://api.faforever.com/data/clan?filter=name=="'+argument+'",tag=="'+argument+'"&include=memberships.player&fields[player]=login&fields[clan]=name,description,websiteUrl,createTime,tag,leader', function(d){
+				   httpsFetch('https://api.faforever.com/data/clan?filter=name=="'+argument+'",tag=="'+argument+'"&include=memberships.player&fields[player]=login&fields[clanMembership]=createTime,player&fields[clan]=name,description,websiteUrl,createTime,tag,leader', function(d){
 						if (Number.isInteger(d)){
 							return sendMessage(message.channel, "Server returned the error `"+d+"`.");
 						}
@@ -407,7 +509,7 @@ function react(message){
 								description : data.data[0].attributes.description,
 								websiteUrl : data.data[0].attributes.websiteUrl,
 								leaderId : data.data[0].relationships.leader.data.id,
-								users : [],
+								users : {},
 								leader : "Unknown"
 							}
 							
@@ -421,35 +523,85 @@ function react(message){
 										break;
 										
 									case "player":
-										clan.users.push(thisData.attributes.login);
-										if (thisData.id == clan.leaderId){
-											clan.leader = thisData.attributes.login;
+										if (clan.users[thisData.id] == undefined){
+											clan.users[thisData.id] = {}
 										}
+										clan.users[thisData.id].name = (thisData.attributes.login);
+										if (thisData.id == clan.leaderId){
+											clan.users[thisData.id].leader = true;
+										}
+										else{
+											clan.users[thisData.id].leader = false;
+										}
+										break;
+										
+									case "clanMembership":
+										const playerId = thisData.relationships.player.data.id;
+										if (clan.users[playerId] == undefined){
+											clan.users[playerId] = {}
+										}
+										clan.users[playerId].joinedAt = formattedDate(new Date(Date.parse(thisData.attributes.createTime)));
+										
 										break;
 								}
 							}
 							
-							let response = "Clan info for ["+argument+"]\n\n```md\n";
 							
-							response+= "# "+clan.name+"\n";
-							response+= "ID : "+clan.id+"\n";
-							response+= "Created : "+clan.createTime+"\n";
-							response+= "** Description **\n"+clan.description+"\n";
-							response+= "URL : "+clan.websiteUrl+"	\n";
 							
-							if (clan.users.length > 0){
-								response+= "\n# MEMBERS\n";
-								for (i = 0; i < clan.users.length; i++){
-									let name = clan.users[i];
-									if (name == clan.leader){
-										name += " [Leader]";
+							
+							let embedMes = {
+								"content": "Clan info for ["+argument+"]",
+							  "embed": {
+								"title": "ID : "+clan.id+"",
+								"color": 0xFF0000,
+								"author": {
+								  "name": clan.name,
+								  "url": clan.websiteUrl
+								},
+								"fields": [
+								{
+									"name": "Created",
+									"value": clan.createTime,
+									"inline":true
+								},
+								{
+									"name": "URL",
+									"value": clan.websiteUrl,
+									"inline":true
+								},
+								{
+									"name": "Clan size",
+									"value": Object.keys(clan.users).length,
+									"inline":true
+								},
+								{
+									"name": "Description",
+									"value": clan.description,
+								}
+								]
+							  }
+							}
+							
+							const userArr = Object.keys(clan.users);
+							if (userArr.length > 0){
+								for (i = 0; i < userArr.length; i++){
+									let name = clan.users[userArr[i]].name;
+									let sub = clan.users[userArr[i]].joinedAt;
+									if (clan.users[userArr[i]].leader === true){
+										sub = "[Leader]";
 									}
-									response+= name+"\n";
+									
+									embedMes["embed"].fields.push(
+									  {
+										"name": name,
+										"value": sub,
+										"inline": true
+									  });
 								}
 							}
-							response += "```";
+							
 							utils.log("...retrieved and returned full data in the guild.", "OK", message.guild);
-							return sendMessage(message.channel, response);
+							return sendMessage(message.channel, embedMes);
 						}
 						else{
 							utils.log("...non-existing clan!", "><", message.guild);
@@ -475,7 +627,7 @@ function react(message){
 				   .replace(/"/g, "\\\"");
 				   
 				   
-				   httpFetch('https://api.faforever.com/data/player?filter=login=="'+argument+'*"&page[limit]='+(limit+1)+'', function(d){
+				   httpsFetch('https://api.faforever.com/data/player?filter=login=="'+argument+'*"&page[limit]='+(limit+1)+'', function(d){
 						if (Number.isInteger(d)){
 							return sendMessage(message.channel, "Server returned the error `"+d+"`.");
 						}
@@ -527,7 +679,7 @@ function react(message){
 				   .replace(/"/g, "\\\"");
 				   ///end of
 				   
-				   httpFetch('https://api.faforever.com/data/player?filter=login=="'+argument+'"&include=clanMemberships.clan,globalRating,ladder1v1Rating,names', function(d){
+				   httpsFetch('https://api.faforever.com/data/player?filter=login=="'+argument+'"&include=clanMemberships.clan,globalRating,ladder1v1Rating,names,avatarAssignments.avatar', function(d){
 								
 						const data = JSON.parse(d);
 						if (data.data != undefined && data.data.length > 0){
@@ -539,7 +691,10 @@ function react(message){
 								createTime : data.data[0].attributes.createTime,
 								updateTime : data.data[0].attributes.updateTime,
 								clans : [],
-								aliases : []
+								aliases : [],
+								avatarId : '',
+								avatarUrl : '',
+								lastAvatarTime: null
 							}
 							
 							const inc = data.included;
@@ -566,57 +721,97 @@ function react(message){
 									
 									case "globalRating":	
 										player.global = {};
-										player.global.numGames = thisData.attributes.numgames;
 										player.global.rating = thisData.attributes.rating;
-										player.global.rank = thisData.attributes.rank;
 										break;
 									
 									case "ladder1v1Rating":	
 										player.ladder = {};
-										player.ladder.numGames = thisData.attributes.numgames;
 										player.ladder.rating = thisData.attributes.rating;
-										player.ladder.rank = thisData.attributes.rank;
+										break;
+										
+									case "avatarAssignment":
+										if (player.lastAvatarTime < Date.parse(thisData.attributes.updateTime) && thisData.attributes.selected){
+											player.avatarId = thisData.relationships.avatar.data.id;
+											player.lastAvatarTime = Date.parse(thisData.attributes.updateTime);
+										}
 										break;
 								}
 							}
 							
-							let response = "Player info for ["+player.name+"]\n\n```md\n";
+							for (let i = 0; i < inc.length; i++){
+								let thisData = inc[i];
+								switch (thisData.type){
+									case "avatar":
+										if (thisData.id == player.avatarId){
+											player.avatarUrl = thisData.attributes.url.replace(/( )/g, "%20");
+										}
+										break;
+								}
+							};
 							
-							response+= "** ID : "+player.id+" **\n";
+							
+							let embedMes = {
+								"content": "Player info for ["+player.name+"]",
+							  "embed": {
+								"title": "ID : "+player.id+"",
+								"color": 0xFF0000,
+								"author": {
+								  "name": player.name
+								},
+								"fields": []
+							  }
+							}
+							
 							aliasString = "None";
+							
 							if (player.aliases.length > 0){
 								aliasString = player.aliases.join("\n");
 							}
-							response+= "** ALIASES **\n"+aliasString+"\n";
+							
+							embedMes["embed"].fields.push(
+								  {
+									"name": "Aliases",
+									"value": aliasString,
+									"inline": false
+								  });
+							
+							if (player.avatarUrl != ''){
+								embedMes["embed"].thumbnail = {};
+								embedMes["embed"].thumbnail.url = player.avatarUrl;
+							}
 							
 							if (player.ladder){
-								response+= "\n# LADDER\n";
-								response+= "Rating : "+player.ladder.rating+"\n";
-								//response+= "Games : "+player.ladder.numGames+"\n";
-								//response+= "Rank : #"+player.ladder.rank+"\n";
+								embedMes["embed"].fields.push(
+								  {
+									"name": "Ladder rating",
+									"value": ""+Math.floor(player.ladder.rating),
+									"inline": true
+								  });
 							}
 							
 							if (player.global){
-								response+= "\n# GLOBAL\n";
-								response+= "Rating : "+player.global.rating+"\n";
-								//response+= "Games : "+player.global.numGames+"\n";
-								//response+= "Rank : #"+player.global.rank+"\n";
+								embedMes["embed"].fields.push(
+								  {
+									"name": "Global rating",
+									"value": ""+Math.floor(player.global.rating),
+									"inline": true
+								  });
 							}
 							
 							if (player.clans.length > 0){
-								response+= "\n# CLAN INFO\n";
+								
 								for (i = 0; i < player.clans.length; i++){
 									const thisClan = player.clans[i];
-									response+= "Name : "+thisClan.name+"["+thisClan.tag+"]\n";
-									response+= "Clan size : "+thisClan.size+"\n";
-									response+= "URL : "+thisClan.websiteUrl+"\n";
-									
-									response+="\n";
+									embedMes["embed"].fields.push(
+									  {
+										"name": "Clan : "+thisClan.name+"["+thisClan.tag+"]"+"",
+										"value": "Clan size : "+thisClan.size+"\n"+"URL : "+thisClan.websiteUrl,
+									  });
 								}
 							}
-							response += "```";
+							
 							utils.log("...retrieved and returned full data in the guild.", "OK", message.guild);
-							return sendMessage(message.channel, response);
+							return sendMessage(message.channel, embedMes);
 						}
 						else{
 							utils.log("...non-existing player!", "><", message.guild);
@@ -853,7 +1048,7 @@ function getPoints(database, userId, function_callback){
 	});
 }
 
-function httpFetch(address, function_callback){
+function httpsFetch(address, function_callback){
    
    //Single HTTPS-GET should get us everything we need
    
@@ -906,6 +1101,57 @@ function httpFetch(address, function_callback){
 		utils.log("HTTPS request returned following error : ["+(e)+"]. Doing nothing.", "WW");
 	});
 }
+function httpFetch(address, function_callback){
+	
+	http.get(address, (res) => {
+		//console.log('statusCode:', res.statusCode);
+		//console.log('headers:', res.headers);
+		let ok = false;
+		switch (res.statusCode){
+			default:
+				ok = true;
+				break;
+				
+			case 400:
+				utils.log("Malformed request ?! 400 - doing nothing.", "WW");
+				break;
+				
+			case 403:
+				utils.log("Access forbidden ?! 403 - doing nothing.", "WW");
+				break;
+				
+			case 404:
+				utils.log("Server not found ?! 404 - doing nothing.", "WW");
+				break;
+				
+			case 500:
+				utils.log("Server error ?! 505 - doing nothing.", "WW");
+				break;
+		}
+		
+		if (ok){
+
+			let d = '';
+
+			res.setEncoding('utf8');
+
+			res.on('readable', function () {
+				const chunk = this.read() || '';
+
+				d += chunk;
+			});
+
+			res.on('end', function () { function_callback(d); });
+			
+		}
+		else{
+			function_callback(res.statusCode);
+		}
+		
+	}).on('error', (e) => {
+		utils.log("HTTP request returned following error : ["+(e)+"]. Doing nothing.", "WW");
+	});
+}
 
 function getFaction(int_fac){
 	switch (int_fac){
@@ -929,6 +1175,39 @@ function getFaction(int_fac){
 			return "nomad"
 			break;
 	}
+}
+function getFactionColor(str_fac){
+	
+	switch (str_fac.toLowerCase()){
+			
+		case "uef":
+			return 0x0000FF;
+			break;
+		case "aeon":
+			return 0x00FF00;
+			break;
+		case "cybran":
+			return 0xFF0000;
+			break;
+		case "seraphim":
+			return 0xFFFF00;
+			break;
+		case "nomad":
+			return 0xFF9900;
+			break;
+	}
+	
+}
+
+function formattedDate(d = new Date) {
+  let month = String(d.getMonth() + 1);
+  let day = String(d.getDate());
+  const year = String(d.getFullYear());
+
+  if (month.length < 2) month = '0' + month;
+  if (day.length < 2) day = '0' + day;
+
+  return `${month}/${day}/${year}`;
 }
 
 //...//
