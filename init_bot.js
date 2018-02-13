@@ -49,12 +49,34 @@ client.on('message', message => {
 		return;
 	}
 	
-	const msgString = message.content;
+	let msgString = message.content;
 	let issuedCommand = false;
+	let talkingToMe = false;
 	
 	//////////////////////
 	// INPUT DETECTION
 	//////////////////////
+	
+	const grabs = Object.keys(settings.aliases);
+	
+	for (let i = 0; i < grabs.length; i++){	//Check if message includes one of the aliases
+		const thisAlias = grabs[i];
+		let validAlias = true;
+		
+		for (var j = 0; j < thisAlias.length; j++){
+			var thisChar = msgString.charAt(j);
+			var thisPrefChar = thisAlias.charAt(j);
+			if (thisChar != thisPrefChar){
+				validAlias = false;
+			}
+		}
+		if (validAlias){
+			message.content = settings.aliases[thisAlias] + message.content.substring(thisAlias.length);
+			utils.log('Aliased '+msgString+' in '+message.content+' for command recognition - should be talking to me', '??', message.guild);
+			msgString = message.content;
+		}
+	}
+		
 	for (var i = 0; i < settings.prefixes.length; i++){	//Check if message includes on of the prefixes
 		const thisPref = settings.prefixes[i];
 		let validPref = true;
@@ -65,32 +87,35 @@ client.on('message', message => {
 				validPref = false;
 			}
 		}
-		if (validPref){	//It does => Execing command
+		if (validPref){
 			utils.log(message.author.username+' is talking to me', '!!', message.guild);
 			message.content = message.content.slice(settings.prefixes[i].length, message.content.length);
-			let canDo = true;
-			if (settings["dev-only-mode"]){
-				const aId = parseInt(message.author.id)
-				if (settings["devs"].indexOf(aId, settings["devs"]) < 0){
-					utils.log(message.author.username+' is not a developper, and dev-only-mode activated. Doing nothing.', '><', message.guild);
-					canDo = false;
-				}
-			}
-			if (canDo){
-				utils.log("Reacting to ["+msgString+"] ...", "..", message.guild);
-				issuedCommand = true;
-				const reaction = behavior.react(message);
-				if (reaction === false){
-					utils.log("...failed!", "WW", message.guild);
-				}
-				else if (reaction === null){
-					utils.log("...nothing to respond to that", "><", message.guild);
-				}
-				else if (reaction === true){
-					utils.log("...end of interaction", "OK", message.guild);
-				}
-			}
+			talkingToMe = true;
 			break;
+		}
+	}
+	if (talkingToMe){	//It does => Execing command
+		let canDo = true;
+		if (settings["dev-only-mode"]){
+			const aId = parseInt(message.author.id)
+			if (settings["devs"].indexOf(aId, settings["devs"]) < 0){
+				utils.log(message.author.username+' is not a developper, and dev-only-mode activated. Doing nothing.', '><', message.guild);
+				canDo = false;
+			}
+		}
+		if (canDo){
+			utils.log("Reacting to ["+msgString+"] ...", "..", message.guild);
+			issuedCommand = true;
+			const reaction = behavior.react(message);
+			if (reaction === false){
+				utils.log("...failed!", "WW", message.guild);
+			}
+			else if (reaction === null){
+				utils.log("...nothing to respond to that", "><", message.guild);
+			}
+			else if (reaction === true){
+				utils.log("...end of interaction", "OK", message.guild);
+			}
 		}
 	}
 	

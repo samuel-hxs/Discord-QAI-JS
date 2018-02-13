@@ -53,6 +53,130 @@ function react(message){
 				return null; //null => nothing happened
 				break;
 				
+			case "wiki":
+				utils.log(message.author.username+" is performing a wiki search...", "..", message.guild);
+				
+				httpFetch('https://wiki.faforever.com/api.php?action=query&list=search&srsearch='+argument+'&format=json&srlimit=1&srwhat=text', function(d){
+					if (Number.isInteger(d)){
+						return sendMessage(message.channel, "Server returned the error `"+d+"`.");
+					}
+					
+					const data = JSON.parse(d);
+					if (data != undefined && data.query != undefined && data.query.searchinfo.totalhits > 0){
+						utils.log("....search hit ! Retrieving data...", "..", message.guild);
+						
+						const hit = data.query.search[0]; //For multiple results, will have to tweak this in a for loop.
+						
+						let embedMes = {
+							"content": "Results for search term \""+argument+"\" :",
+							  "embed": {
+								"title": "**Click here to access wiki page**",
+								"url": "https://wiki.faforever.com/index.php?title="+hit.title.replace(/( )/g, "%20")+"",
+								"color": 0xFF0000,
+								"thumbnail": {
+								  "url": "https://wiki.faforever.com/images/icon.png"
+								},
+								"fields": [
+								  {
+									"name": ""+hit.title+"",
+									"value": hit.snippet.replace(/<{1}[^<>]{1,}>{1}/g,"")
+								  }
+								]
+							  }
+							};
+						
+						return sendMessage(message.channel, embedMes);
+						
+						
+					}
+					
+					else{
+						utils.log("...no results. EOI.", "><", message.guild);
+						return sendMessage(message.channel, "No results for the term \""+argument+"\"");
+					}
+					
+				});
+				break;
+				
+			case "pool":
+				utils.log(message.author.username+" is asking info about FAF pool...", "..", message.guild);
+				httpFetch('https://api.faforever.com/data/ladder1v1Map?include=mapVersion.map', function(d){
+					if (Number.isInteger(d)){
+						return sendMessage(message.channel, "Server returned the error `"+d+"`.");
+					}
+					
+					const data = JSON.parse(d);
+					if (data != undefined && data.included != undefined){
+						utils.log("....found map pool ! Retrieving data...", "..", message.guild);
+						
+						let maps = {};
+						const inc = data.included;
+							
+						for (let i = 0; i < inc.length; i++){
+							let thisData = inc[i];
+							let id = "";
+							switch (thisData.type){
+								default:
+									continue;
+									break;
+									
+								case "mapVersion":
+									id = thisData.relationships.map.data.id;
+									if (maps[id] == undefined){
+										maps[id] = {};
+									}
+									
+									maps[id].imgUrl = thisData.attributes.thumbnailUrlSmall.replace(/( )/g, "%20");
+									maps[id].mapVersion = thisData.attributes.version;
+									maps[id].mapSize = ((thisData.attributes.width/512)*10)+"x"+((thisData.attributes.height/512)*10)+" km";
+									break;
+									
+								case "map":
+									id = thisData.id;
+									if (maps[id] == undefined){
+										maps[id] = {};
+									}
+									maps[id].mapName = thisData.attributes.displayName;
+									
+									break;
+							}
+						}
+						
+						let embedMes = {
+							  "embed": {
+								"title": "**Ladder maps pool**",
+								"color": 0xFF0000,
+								"thumbnail": {
+								  "url": maps[Object.keys(maps)[0]].imgUrl
+								},
+								"fields": []
+							  }
+							}
+							
+							const keys = Object.keys(maps);
+							for (let i = 0; i < keys.length; i++){
+								const id = keys[i];
+								const m = maps[id];
+								
+								embedMes["embed"].fields.push({
+									"name": m.mapName+" ["+m.mapVersion+"]",
+									"value": m.mapSize,
+									"inline": true
+								});
+							}
+							
+							return sendMessage(message.channel, embedMes);
+						
+					}
+					else{
+						utils.log("...error fetching map pool info!", "><", message.guild);
+						return sendMessage(message.channel, "Could not retrieve map pool.");
+					}
+					  
+				   });
+					return 1;
+				break;
+				
 			case "replay":
 				if (argument == null){
 					//utils.log(message.author.username+" command misuse, doing nothing.", "><", message.guild);
@@ -67,66 +191,14 @@ function react(message){
 				   .replace(/'/g, "\\'")
 				   .replace(/"/g, "\\\"");
 				   
-				   
-				   
-				   //Single HTTPS-GET should get us everything we need
-				   httpFetch('https://api.faforever.com/data/game/'+argument+'?include=mapVersion,playerStats,mapVersion.map,playerStats.player', function(d){
+				   httpFetch('https://api.faforever.com/data/game/'+argument+'?include=mapVersion,playerStats,mapVersion.map,playerStats.player,featuredMod,playerStats.player.globalRating,playerStats.player.ladder1v1Rating', function(d){
+						if (Number.isInteger(d)){
+							return sendMessage(message.channel, "Server returned the error `"+d+"`.");
+						}
 						const data = JSON.parse(d);
 						//console.log(d);
 						if (data != undefined && data.data != undefined){
 							utils.log("....found replay ! Retrieving data...", "..", message.guild);
-
-/*							
-							{
-  "content": "this `supports` __a__ **subset** *of* ~~markdown~~ ?? ```js\nfunction foo(bar) {\n  console.log(bar);\n}\n\nfoo(1);```",
-  "embed": {
-    "title": "title ~~(did you know you can have markdown here too?)~~",
-    "description": "this supports [named links](https://discordapp.com) on top of the previously shown subset of markdown. ```\nyes, even code blocks```",
-    "url": "https://discordapp.com",
-    "color": 8285178,
-    "timestamp": "2018-02-12T23:35:34.745Z",
-    "footer": {
-      "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png",
-      "text": "footer text"
-    },
-    "thumbnail": {
-      "url": "https://cdn.discordapp.com/embed/avatars/0.png"
-    },
-    "image": {
-      "url": "https://cdn.discordapp.com/embed/avatars/0.png"
-    },
-    "author": {
-      "name": "author name",
-      "url": "https://discordapp.com",
-      "icon_url": "https://cdn.discordapp.com/embed/avatars/0.png"
-    },
-    "fields": [
-      {
-        "name": "??",
-        "value": "some of these properties have certain limits..."
-      },
-      {
-        "name": "??",
-        "value": "try exceeding some of them!"
-      },
-      {
-        "name": "??",
-        "value": "an informative error should show up, and this view will remain as-is until all issues are fixed"
-      },
-      {
-        "name": "<:thonkang:219069250692841473>",
-        "value": "these last two",
-        "inline": true
-      },
-      {
-        "name": "<:thonkang:219069250692841473>",
-        "value": "are inline fields",
-        "inline": true
-      }
-    ]
-  }
-}
-*/
 							
 							let replay = {
 								id : argument,
@@ -135,6 +207,8 @@ function react(message){
 								startTime : data.data.attributes.startTime,
 								victoryCondition : data.data.attributes.victoryCondition,
 								validity : data.data.attributes.validity,
+								gameType: "",
+								technicalGameType: "",
 								imgUrl: "",
 								mapName: "",
 								mapVersion: "",
@@ -185,19 +259,47 @@ function react(message){
 										replay.players[pid].name = thisData.attributes.login;
 									
 										break;
+										
+									case "featuredMod":
+										switch (thisData.attributes.technicalName){
+											default:
+												replay.gameType = thisData.attributes.displayName;
+												replay.technicalGameType = thisData.attributes.technicalName;
+												break;
+												
+											case "faf":
+												break;
+										}
+										break;
+										
+									case "ladder1v1Rating":
+										const lid = thisData.relationships.player.data.id;
+										replay.players[lid].ladderRating = Math.floor(thisData.attributes.rating);
+										break;
+										
+									case "globalRating":
+										const gid = thisData.relationships.player.data.id;
+										replay.players[gid].globalRating = Math.floor(thisData.attributes.rating);
+										
+										break;
 								}
+							}
+							
+							let gm = replay.gameType;
+							if (replay.gameType != ""){
+								gm = "["+gm+"] ";
 							}
 							
 							let embedMes = {
 							  "embed": {
-								"title": "**Info for replay #"+replay.id+"**",
+								"title": "**Download replay #"+replay.id+"**",
 								"url": replay.replayUrl,
 								"color": 0xFF0000,
 								"thumbnail": {
 								  "url": replay.imgUrl
 								},
 								"author": {
-								  "name": replay.name,
+								  "name": gm+replay.name,
 								  "url": replay.replayUrl,
 								},
 								"fields": [
@@ -223,7 +325,7 @@ function react(message){
 								  },
 								  {
 									"name": "Map info",
-									"value": replay.mapType+" "+replay.mapName+" ["+replay.mapVersion+"] ("+replay.mapSize+")"
+									"value": replay.mapName+" ["+replay.mapVersion+"] ("+replay.mapSize+")"
 								  }
 								]
 							  }
@@ -234,8 +336,23 @@ function react(message){
 								const id = keys[i];
 								const p = replay.players[id];
 								
-								let pNameString = "<:"+getFaction(p.faction)+":"+message.client.emojis.findKey("name",getFaction(p.faction))+"> "+p.name+" ["+p.slot+"]";
-								let value = "Team "+p.team+"\n";
+								let rating = "0";
+								
+								if (replay.technicalGameType == "ladder1v1"){
+									rating = "L"+p.ladderRating;
+								}
+								else{
+									rating = "G"+p.globalRating;
+								}
+								
+								let pNameString = "<:"+getFaction(p.faction)+":"+message.client.emojis.findKey("name",getFaction(p.faction))+"> "+p.name+" ["+rating+"]";
+								
+								let value = "";
+								
+								if (!replay.validity.includes("FFA")){
+									value += "Team "+p.team+"\n";
+								}
+								
 								value += "Score: "+p.score+"\n";
 								if (p.ai){
 									pNameString = "AI "+pNameString;
@@ -275,6 +392,9 @@ function react(message){
 					
 				   //Single HTTPS-GET should get us everything we need
 				   httpFetch('https://api.faforever.com/data/clan?filter=name=="'+argument+'",tag=="'+argument+'"&include=memberships.player&fields[player]=login&fields[clan]=name,description,websiteUrl,createTime,tag,leader', function(d){
+						if (Number.isInteger(d)){
+							return sendMessage(message.channel, "Server returned the error `"+d+"`.");
+						}
 						const data = JSON.parse(d);
 						
 						if (data.data != undefined && data.data.length > 0){
@@ -356,6 +476,9 @@ function react(message){
 				   
 				   
 				   httpFetch('https://api.faforever.com/data/player?filter=login=="'+argument+'*"&page[limit]='+(limit+1)+'', function(d){
+						if (Number.isInteger(d)){
+							return sendMessage(message.channel, "Server returned the error `"+d+"`.");
+						}
 						
 						const data = JSON.parse(d);
 						if (data.data != undefined && data.data.length > 0){
@@ -743,6 +866,10 @@ function httpFetch(address, function_callback){
 				ok = true;
 				break;
 				
+			case 400:
+				utils.log("Malformed request ?! 400 - doing nothing.", "WW");
+				break;
+				
 			case 403:
 				utils.log("Access forbidden ?! 403 - doing nothing.", "WW");
 				break;
@@ -770,6 +897,9 @@ function httpFetch(address, function_callback){
 
 			res.on('end', function () { function_callback(d); });
 			
+		}
+		else{
+			function_callback(res.statusCode);
 		}
 		
 	}).on('error', (e) => {
