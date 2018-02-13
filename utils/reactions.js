@@ -744,15 +744,15 @@ function httpFetch(address, function_callback){
 				break;
 				
 			case 403:
-				utils.log("Access forbidden ?! 403 - doing nothing.", "WW", message.guild);
+				utils.log("Access forbidden ?! 403 - doing nothing.", "WW");
 				break;
 				
 			case 404:
-				utils.log("Server not found ?! 404 - doing nothing.", "WW", message.guild);
+				utils.log("Server not found ?! 404 - doing nothing.", "WW");
 				break;
 				
 			case 500:
-				utils.log("Server error ?! 505 - doing nothing.", "WW", message.guild);
+				utils.log("Server error ?! 505 - doing nothing.", "WW");
 				break;
 		}
 		
@@ -773,7 +773,7 @@ function httpFetch(address, function_callback){
 		}
 		
 	}).on('error', (e) => {
-		utils.log("HTTPS request returned following error : ["+(e)+"]. Doing nothing.", "WW", message.guild);
+		utils.log("HTTPS request returned following error : ["+(e)+"]. Doing nothing.", "WW");
 	});
 }
 
