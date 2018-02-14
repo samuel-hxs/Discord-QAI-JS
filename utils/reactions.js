@@ -151,6 +151,10 @@ function react(message){
 				break;
 				
 			case "wiki":
+				if (argument.length == 0){
+					//empty search
+					return false;
+				}
 				utils.log(message.author.username+" is performing a wiki search...", "..", message.guild);
 					//Character escaping
 					argument = argument.replace(/\\/g, "\\\\")

@@ -15,6 +15,8 @@ const settings = require('./sys/settings.json');
 const databaseFile = './_private/userdata.db';  
 let db = new sqlite3.Database(databaseFile);  
 
+let onCooldown = false;
+
 utils.log('QAIx fired ! Preparing...');
 
 //INITIALIZATION
@@ -42,6 +44,20 @@ client.on('guildMemberAdd', guildMember=>{
 
 //ON MESSAGE
 client.on('message', message => {
+	
+	//it's me !
+	if (message.author.id == client.id){
+		return;
+	}
+	
+	
+	
+	//Exit if on cooldown
+	if (onCooldown){
+		utils.log('On cooldown, ignoring ['+message.content+']', '--', message.guild);
+		return;
+	}
+	
 	
 	//SAFETY
 	if (!message.guild){
@@ -107,7 +123,6 @@ client.on('message', message => {
 		}
 		if (canDo){
 			utils.log("Reacting to ["+msgString+"] ...", "..", message.guild);
-			issuedCommand = true;
 			const reaction = behavior.react(message);
 			if (reaction === false){
 				utils.log("...failed!", "WW", message.guild);
@@ -116,6 +131,7 @@ client.on('message', message => {
 				utils.log("...nothing to respond to that", "><", message.guild);
 			}
 			else if (reaction === true){
+				issuedCommand = true;
 				utils.log("...end of interaction", "OK", message.guild);
 			}
 		}
@@ -128,6 +144,11 @@ client.on('message', message => {
 		let fakeList = [];
 		fakeList.push(message.author.id);
 		behavior.addPoints(db, fakeList, 1);
+	}
+	else{
+		//User issued command : cooldown mode
+		onCooldown = true;
+		setTimeout(function(){onCooldown = false;}, 30000);
 	}
 });
 
