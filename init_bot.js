@@ -46,7 +46,7 @@ client.on('guildMemberAdd', guildMember=>{
 client.on('message', message => {
 	
 	//it's me !
-	if (message.author.id == client.id){
+	if (message.author.id == client.user.id){
 		return;
 	}
 	
