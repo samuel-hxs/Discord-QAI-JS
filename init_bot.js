@@ -51,14 +51,6 @@ client.on('message', message => {
 	}
 	
 	
-	
-	//Exit if on cooldown
-	if (onCooldown){
-		utils.log('On cooldown, ignoring ['+message.content+']', '--', message.guild);
-		return;
-	}
-	
-	
 	//SAFETY
 	if (!message.guild){
 		utils.log('Received message from empty guild. Doing nothing.', '><');
@@ -113,6 +105,12 @@ client.on('message', message => {
 		}
 	}
 	if (talkingToMe){	//It does => Execing command
+		  //Exit if on cooldown
+	        if (onCooldown){
+	                utils.log('On cooldown, ignoring ['+message.content+']', '--', message.guild);
+	                return;
+	        }
+
 		let canDo = true;
 		if (settings["dev-only-mode"]){
 			const aId = parseInt(message.author.id)
@@ -133,6 +131,9 @@ client.on('message', message => {
 			else if (reaction === true){
 				issuedCommand = true;
 				utils.log("...end of interaction", "OK", message.guild);
+			}
+			else{
+				issuedCommand = true;
 			}
 		}
 	}
