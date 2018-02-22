@@ -965,6 +965,9 @@ function respond(oMessage, rspMsgString, author=null){
 	return true;
 }
 function sendMessage(channel, msgString){
+	if (Number.isInteger(channel)){
+		channel = client.channels.get(channel);
+	}
     channel.send(msgString);
 	return true;
 }
@@ -1222,6 +1225,10 @@ module.exports = {
    react: 
 	function(message){
 		return react(message);
+	},
+   sendMessage: 
+	function(channel, msgString){
+		return sendMessage(channel, msgString);
 	},
    addPoints: 
 	function(database, userList, int_points){

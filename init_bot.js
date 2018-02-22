@@ -1,13 +1,17 @@
 //LIBS
 const Discord = require('discord.js');
-const client = new Discord.Client();
 const fs = require("fs");
 const sqlite3 = require('sqlite3').verbose();
 
+const client = new Discord.Client();
+module.exports = {
+   getChannel: function(str){	return client.channels.get(str);}
+}
 
 //UTILS
 const utils = require('./utils/funcs.js');
 const behavior = require('./utils/reactions.js');
+const ircu = require('./utils/irc_uplink.js');
 
 //CONFIG
 const config = require('./_private/config.json');
@@ -36,7 +40,7 @@ client.on('guildMemberAdd', guildMember=>{
 	utils.track(guildMember);
 
 	//Drop a message for the new users.
-	//let channel = client.channels.get("408555951382200321");
+	//let channel = client.channels.get("273508471834542091");
 	//channel.send(`Welcome ${guildMember.toString()}! Feel free to introduce yourself to the community. :slight_smile:`);
 
 	guildMember.send("Hello and Welcome to the **FAF Discord Server**. We are quite active and are happy to help with any problems you may have. \n\n__**Useful Links**__\nForums: http://forums.faforever.com/index.php \nWiki: https://wiki.faforever.com/index.php?title=Main_Page \nClient Download: https://faforever.com/client");
@@ -47,6 +51,14 @@ client.on('message', message => {
 	
 	//it's me !
 	if (message.author.id == client.user.id){
+		return;
+	}
+	
+	//Aeolus transmission
+	if (message.channel.name == "aeolus"){
+		ircu.sendIrcMessage(message.author.username+': '+message.content);
+		message.channel.send('**'+message.author.username+'**: '+message.content);
+		message.delete();
 		return;
 	}
 	
