@@ -19,7 +19,9 @@
   "dependencies": {
     "discord.js": "^11.2.1",
     "fs": "0.0.1-security",
+    "http": "0.0.0",
     "https": "^1.0.0",
+    "irc": "^0.5.2",
     "mkdirp": "^0.5.1",
     "node-opus": "^0.2.7",
     "package.json": "^2.0.1",
