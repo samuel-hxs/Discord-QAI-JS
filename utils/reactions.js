@@ -151,7 +151,7 @@ function react(message){
 				break;
 				
 			case "wiki":
-				if (argument != null || argument.length == 0){
+				if (argument == null || argument.length == 0){
 					//empty search
 					return false;
 				}
