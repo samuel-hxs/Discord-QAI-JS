@@ -6,6 +6,7 @@
   "prefixes": ["!", "QAI!", "QAIx!"],
   "write-logs": true,
   "aliases": {
-	"?": "!wiki "
+	"?": "!wiki ",
+	"#": "!replay "
   }
 }
