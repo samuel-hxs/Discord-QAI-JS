@@ -165,4 +165,9 @@ client.on('message', message => {
 	}
 });
 
+//ON EXCEPTION
+process.on('uncaughtException', function(err) {
+  utils.log('General fault! ' + err, 'XX');
+});
+
 client.login(config.token);
