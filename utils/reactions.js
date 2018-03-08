@@ -303,7 +303,7 @@ function react(message){
 						}
 						const data = JSON.parse(d);
 						//console.log(d);
-						if (data != undefined && data.data != undefined){
+						if (data != undefined && data.data != undefined && data.data.attributes != undefined){
 							utils.log("....found replay ! Retrieving data...", "..", message.guild);
 							
 							let replay = {
