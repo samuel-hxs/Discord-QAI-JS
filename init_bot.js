@@ -29,6 +29,11 @@ client.on('ready', () => {
 	client.user.setGame(`with the Seven Hand Node.`);
 });
 
+//ON ERROR
+client.on('error', function(err){
+	utils.log('QAIx encountered an error: '+err.message, 'WW');
+});
+
 //ON DISCONNECT
 client.on('disconnect', () => {
   utils.log('QAIx has disconnected', 'WW');
@@ -165,9 +170,11 @@ client.on('message', message => {
 	}
 });
 
+
 //ON EXCEPTION
 process.on('uncaughtException', function(err) {
-  utils.log('General fault! ' + err, 'XX');
+  utils.log('CRASH AVOIDED! ' + err, 'XX');
 });
+
 
 client.login(config.token);
