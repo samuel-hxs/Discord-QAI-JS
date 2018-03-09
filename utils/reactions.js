@@ -284,6 +284,7 @@ function react(message){
 				break;
 				
 			case "replay":
+			case "lastreplay":
 				if (argument == null){
 					//utils.log(message.author.username+" command misuse, doing nothing.", "><", message.guild);
 					return false;
@@ -297,14 +298,25 @@ function react(message){
 				   .replace(/'/g, "\\'")
 				   .replace(/"/g, "\\\"");
 				   
-				   httpsFetch('https://api.faforever.com/data/game/'+argument+'?include=mapVersion,playerStats,mapVersion.map,playerStats.player,featuredMod,playerStats.player.globalRating,playerStats.player.ladder1v1Rating', function(d){
+				   const includes = 'include=mapVersion,playerStats,mapVersion.map,playerStats.player,featuredMod,playerStats.player.globalRating,playerStats.player.ladder1v1Rating';
+				   let fetchUrl = 'https://api.faforever.com/data/game/'+argument+'?'+includes;
+				   
+				   if (msgString == 'lastreplay'){
+						fetchUrl = 'https://api.faforever.com/data/game?filter=playerStats.player.login=="'+argument+'"&sort=-endTime&page[size]=1&'+includes;
+				   }				   
+				   
+				   httpsFetch(fetchUrl, function(d){
 						if (Number.isInteger(d)){
 							return sendMessage(message.channel, "Server returned the error `"+d+"`.");
 						}
 						const data = JSON.parse(d);
-						//console.log(d);
-						if (data != undefined && data.data != undefined && data.data.attributes != undefined){
+						
+						if (data != undefined && data.data != undefined && (data.data.attributes != undefined || data.data[0].attributes !=undefined)){
 							utils.log("....found replay ! Retrieving data...", "..", message.guild);
+							
+							if (msgString == 'lastreplay'){
+								data.data = data.data[0];
+							}
 							
 							let replay = {
 								id : argument,
@@ -469,7 +481,6 @@ function react(message){
 							}
 							
 							return sendMessage(message.channel, embedMes);
-							
 						}
 						else{
 							utils.log("...non-existing replay!", "><", message.guild);

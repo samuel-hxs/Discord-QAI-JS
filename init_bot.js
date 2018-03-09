@@ -173,7 +173,9 @@ client.on('message', message => {
 
 //ON EXCEPTION
 process.on('uncaughtException', function(err) {
+  utils.log('-------------------------', 'XX');
   utils.log('CRASH AVOIDED! ' + err, 'XX');
+  utils.log('-------------------------', 'XX');
 });
 
 
