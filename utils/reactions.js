@@ -311,7 +311,9 @@ function react(message){
 						}
 						const data = JSON.parse(d);
 						
-						if (data != undefined && data.data != undefined && (data.data.attributes != undefined || data.data[0].attributes !=undefined)){
+						if (data != undefined && data.data != undefined && (
+								(Array.isArray(data.data) && data.data.length > 0) || data.data.attributes != undefined)								
+							){
 							utils.log("....found replay ! Retrieving data...", "..", message.guild);
 							
 							if (msgString == 'lastreplay'){
