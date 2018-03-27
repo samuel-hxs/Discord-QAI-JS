@@ -26,7 +26,7 @@ utils.log('QAIx fired ! Preparing...');
 //INITIALIZATION
 client.on('ready', () => {
 	utils.log('QAIx ready !');
-	client.user.setGame(`with the Seven Hand Node.`);
+	client.user.setActivity(`with the Seven Hand Node.`);
 });
 
 //ON ERROR
@@ -175,6 +175,7 @@ client.on('message', message => {
 process.on('uncaughtException', function(err) {
   utils.log('-------------------------', 'XX');
   utils.log('CRASH AVOIDED! ' + err, 'XX');
+  console.log(err);
   utils.log('-------------------------', 'XX');
 });
 

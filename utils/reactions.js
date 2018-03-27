@@ -118,12 +118,13 @@ function react(message){
 							const keys = Object.keys(unit.economy);
 							for (let i = 0; i < keys.length; i++){
 								const field = unit.economy[keys[i]];
+								
 								if (field.constructor === Array){
 									continue;
 								}
 								embedMes["embed"].fields.push({
 									"name": keys[i],
-									"value": field,
+									"value": field+" ",	//adding empty stuff to make sure not empty
 									"inline":true
 								});
 							}
@@ -151,7 +152,7 @@ function react(message){
 				break;
 				
 			case "wiki":
-				if (argument == null || argument.length == 0){
+				if (argument == null || argument.length == 0 || !isAlphanumeric(argument.replace(/ /g, ""))){
 					//empty search
 					return false;
 				}
@@ -162,7 +163,7 @@ function react(message){
 				   .replace(/'/g, "\\'")
 				   .replace(/"/g, "\\\"");
 				
-				httpsFetch('https://wiki.faforever.com/api.php?action=query&list=search&srsearch='+argument+'&format=json&srlimit=1&srwhat=text', function(d){
+				httpsFetch('https://wiki.faforever.com/api.php?action=query&list=search&srsearch='+argument+'&format=json&srlimit=1&srwhat=title', function(d){
 					if (Number.isInteger(d)){
 						return sendMessage(message.channel, "Server returned the error `"+d+"`.");
 					}
@@ -205,6 +206,8 @@ function react(message){
 				break;
 				
 			case "pool":
+			case "ladderpool":
+			case "ladder":
 				utils.log(message.author.username+" is asking info about FAF pool...", "..", message.guild);
 				httpsFetch('https://api.faforever.com/data/ladder1v1Map?include=mapVersion.map', function(d){
 					if (Number.isInteger(d)){
@@ -285,7 +288,7 @@ function react(message){
 				
 			case "replay":
 			case "lastreplay":
-				if (argument == null){
+				if (argument == null || (argument == "replay" && !isNumeric(argument))){
 					//utils.log(message.author.username+" command misuse, doing nothing.", "><", message.guild);
 					return false;
 				}
@@ -513,6 +516,7 @@ function react(message){
 				   httpsFetch('https://api.faforever.com/data/clan?filter=name=="'+argument+'",tag=="'+argument+'"&include=memberships.player&fields[player]=login&fields[clanMembership]=createTime,player&fields[clan]=name,description,websiteUrl,createTime,tag,leader', function(d){
 						if (Number.isInteger(d)){
 							return sendMessage(message.channel, "Server returned the error `"+d+"`.");
+							return false;
 						}
 						const data = JSON.parse(d);
 						
@@ -1230,6 +1234,19 @@ function formattedDate(d = new Date) {
   return `${month}/${day}/${year}`;
 }
 
+function isAlphanumeric(str){
+	if( /[^a-zA-Z0-9]/.test( str ) ) {
+	   return false;
+	}
+	return true;     
+}
+
+function isNumeric(str){
+	if( /[^0-9]/.test( str ) ) {
+	   return false;
+	}
+	return true;     
+}
 //...//
 
 
