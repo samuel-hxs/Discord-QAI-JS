@@ -107,24 +107,30 @@ function react(message){
 									"icon_url": unit.strategicUrl
 								},
 								"fields": [
+								]
+							  }
+							}
+							/*
+							Disabling extended unit stat display...not that useful
+							
+							embedMes["embed"].fields.push(
 								  {
 									"name": "Defense",
 									"value": unit.hp+"+"+unit.regen+"/s HP",
 								  }
-								]
-							  }
-							}
+								);
 							
 							const keys = Object.keys(unit.economy);
 							for (let i = 0; i < keys.length; i++){
 								const field = unit.economy[keys[i]];
 								
-								if (field.constructor === Array){
+								if (field.constructor === Array || field == ""){
 									continue;
 								}
+								
 								embedMes["embed"].fields.push({
 									"name": keys[i],
-									"value": field+" ",	//adding empty stuff to make sure not empty
+									"value": field,	//adding empty stuff to make sure not empty
 									"inline":true
 								});
 							}
@@ -139,7 +145,7 @@ function react(message){
 									"value": abilities.join("\n")
 								});
 							}
-						
+							*/
 						
 						return sendMessage(message.channel, embedMes);
 						
@@ -288,7 +294,7 @@ function react(message){
 				
 			case "replay":
 			case "lastreplay":
-				if (argument == null || (argument == "replay" && !isNumeric(argument))){
+				if (argument == null || (msgString == "replay" && !isNumeric(argument))){
 					//utils.log(message.author.username+" command misuse, doing nothing.", "><", message.guild);
 					return false;
 				}
