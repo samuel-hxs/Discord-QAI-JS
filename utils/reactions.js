@@ -635,7 +635,7 @@ function react(message){
 					return 1;
 				}
 				break;
-				
+			
 			case "searchplayer":
 				if (argument == null){
 					return false;
@@ -788,7 +788,16 @@ function react(message){
 							aliasString = "None";
 							
 							if (player.aliases.length > 0){
-								aliasString = player.aliases.join("\n");
+								const maxAliases = 5; // max aliases
+								aliasString = "";
+								for (var i = 0; i < Math.min(player.aliases.length, maxAliases); i++){
+									aliasString += player.aliases[i]+"\n";
+								}
+								if (player.aliases.length > maxAliases){
+									aliasString += "...";
+								}
+								
+								//aliasString = player.aliases.join("\n");
 							}
 							
 							embedMes["embed"].fields.push(
