@@ -288,7 +288,7 @@ function react(message){
 				
 			case "replay":
 			case "lastreplay":
-				if (argument == null || (argument == "replay" && !isNumeric(argument))){
+				if (argument == null || (msgString == "replay" && !isNumeric(argument))){
 					//utils.log(message.author.username+" command misuse, doing nothing.", "><", message.guild);
 					return false;
 				}
