@@ -62,7 +62,7 @@ function react(message){
 			   .replace(/'/g, "\\'")
 			   .replace(/"/g, "\\\"");
 			   
-			   const webAddress = "http://rk.sytes.net/scfa-unit-db/";
+			   const webAddress = "http://rk.sytes.net/scfa/unit-db/";
 				
 				httpFetch(webAddress+'api.php?searchunit='+argument+'', function(d){
 					if (Number.isInteger(d)){
