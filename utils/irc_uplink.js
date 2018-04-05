@@ -5,7 +5,7 @@ const fakeGuild = {name: 'IRC-AEOLUS', id: 'IRC-AEOLUS'};
 const chan = "#aeolus";
 
 //INIT
-const irc = require('irc');
+const irc = require('funsocietyirc-client');
 const client = new irc.Client(
 	'faforever.com', 
 	'_Discord', {
