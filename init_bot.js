@@ -12,6 +12,7 @@ module.exports = {
 const utils = require('./utils/funcs.js');
 const behavior = require('./utils/reactions.js');
 const ircu = require('./utils/irc_uplink.js');
+const gameManager = require('./games/_games.js');
 
 //CONFIG
 const config = require('./_private/config.json');
@@ -77,7 +78,13 @@ client.on('message', message => {
 	let msgString = message.content;
 	let issuedCommand = false;
 	let talkingToMe = false;
-
+	
+	//////////////////////
+	/// GAME DETECTION
+	//////////////////////
+	if (gameManager.inGame()){
+		gameManager.react(message);
+	}
 	
 	//////////////////////
 	// INPUT DETECTION

@@ -15,9 +15,6 @@ const settings = require('../sys/settings.json');
 
 const Attachment = require('discord.js').Attachment;
 
-//GAMES
-const hangmanGame = require('../games/hangman.js');
-
 //EXPORTS AT EOF
 
 ////////////////
@@ -34,14 +31,6 @@ function react(message){
 		msgString = msgString.substring(0, index);
 		utils.log("...after argument removal, reacting to "+msgString+"["+argument+"]...", "..", message.guild);
 	}
-
-	// Games
-	//if(hangmanGame.isGameOn) {
-		//hangmanGame.processAnswer(message, argument);
-	//}
-
-	// End Games
-	
 	//Commands made more easy
 	msgString = msgString.toLowerCase();
 	//endof
@@ -986,16 +975,13 @@ function react(message){
 			case "help":
 				sendMessage(message.author, "Hi there! I have a documentation on our Wiki :slight_smile:. Wiki Article for QAI: https://wiki.faforever.com/index.php?title=Bots_(Discord_QAI).");
 				break;
-			case "hangman":
-				hangmanGame.handleGameCommand(message, argument);
-				break;
 			case "rancaps":
 				RandomCaps(message.channel, argument);
 				break;
 			case "chatslap":
 				let victim;
 				if (argument == null) {
-					return;
+					return false;
 				}
 				else {
 					victim = utils.replyToId(argument);
@@ -1315,5 +1301,5 @@ module.exports = {
     getPoints:
     function(database, userId, function_callback){
         getPoints(database, userId, function_callback);
-    }
+    },
 }

@@ -7,8 +7,6 @@ const randomWord = require('random-word');
 //UTILS
 const utils = require('../utils/funcs.js');
 const funcs = require('../utils/reactions.js');
-const databaseFile = './_private/userdata.db';  
-let db = new sqlite3.Database(databaseFile);
 
 //PRIV VARS
 const maxTries = 10;
