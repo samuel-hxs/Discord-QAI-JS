@@ -77,6 +77,7 @@ client.on('message', message => {
 	let msgString = message.content;
 	let issuedCommand = false;
 	let talkingToMe = false;
+
 	
 	//////////////////////
 	// INPUT DETECTION
@@ -124,8 +125,8 @@ client.on('message', message => {
 	if (talkingToMe){	//It does => Execing command
 		  //Exit if on cooldown
 	        if (onCooldown){
-	                utils.log('On cooldown, ignoring ['+message.content+']', '--', message.guild);
-	                return;
+	            utils.log('On cooldown, ignoring ['+message.content+']', '--', message.guild);
+	            return;
 	        }
 
 		let canDo = true;
@@ -161,7 +162,7 @@ client.on('message', message => {
 	if (!issuedCommand){
 		let fakeList = [];
 		fakeList.push(message.author.id);
-		behavior.addPoints(db, fakeList, 1);
+		behavior.addPoints(db, fakeList, .3);
 	}
 	else{
 		//User issued command : cooldown mode

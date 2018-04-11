@@ -34,6 +34,13 @@ function react(message){
 		msgString = msgString.substring(0, index);
 		utils.log("...after argument removal, reacting to "+msgString+"["+argument+"]...", "..", message.guild);
 	}
+
+	// Games
+	//if(hangmanGame.isGameOn) {
+		//hangmanGame.processAnswer(message, argument);
+	//}
+
+	// End Games
 	
 	//Commands made more easy
 	msgString = msgString.toLowerCase();
@@ -977,10 +984,26 @@ function react(message){
 				}
 				break;
 			case "help":
-				sendMessage(message.author, "Hi there! I have a documentation on our Wiki :slight_smile:. Wiki Article for QAI: *Link here*.");
+				sendMessage(message.author, "Hi there! I have a documentation on our Wiki :slight_smile:. Wiki Article for QAI: https://wiki.faforever.com/index.php?title=Bots_(Discord_QAI).");
 				break;
 			case "hangman":
 				hangmanGame.handleGameCommand(message, argument);
+				break;
+			case "rancaps":
+				RandomCaps(message.channel, argument);
+				break;
+			case "chatslap":
+				let victim;
+				if (argument == null) {
+					return;
+				}
+				else {
+					victim = utils.replyToId(argument);
+				}
+				sendMessage(message.channel, "Slaps <@"+victim+"> causing them to lose 5 points.");
+				return true;
+
+				break;
 		}
 	}
 }
@@ -1258,21 +1281,39 @@ function isNumeric(str){
 	}
 	return true;     
 }
+
+function RandomCaps(channel, str){
+	let msg = "";
+
+	for (let i = 0; i < str.length; i++){
+		if(Math.floor(Math.random() * 11) < 6) {
+			msg += str.charAt(i).toUpperCase();
+		} else {
+			msg += str.charAt(i);
+		}
+	}
+
+	return sendMessage(channel, msg);
+}
 //...//
 
 
 //EXPORTS FOR SHARED USE
 module.exports = {
-   react: 
+   	react: 
 	function(message){
 		return react(message);
 	},
-   sendMessage: 
+   	sendMessage: 
 	function(channel, msgString){
 		return sendMessage(channel, msgString);
 	},
-   addPoints: 
+   	addPoints: 
 	function(database, userList, int_points){
 		addPoints(database, userList, int_points, function(){});
 	},
+    getPoints:
+    function(database, userId, function_callback){
+        getPoints(database, userId, function_callback);
+    }
 }
