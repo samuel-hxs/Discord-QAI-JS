@@ -15,6 +15,9 @@ const settings = require('../sys/settings.json');
 
 const Attachment = require('discord.js').Attachment;
 
+//GAMES
+const hangmanGame = require('../games/hangman.js');
+
 //EXPORTS AT EOF
 
 ////////////////
@@ -31,6 +34,7 @@ function react(message){
 		msgString = msgString.substring(0, index);
 		utils.log("...after argument removal, reacting to "+msgString+"["+argument+"]...", "..", message.guild);
 	}
+	
 	//Commands made more easy
 	msgString = msgString.toLowerCase();
 	//endof
@@ -103,24 +107,30 @@ function react(message){
 									"icon_url": unit.strategicUrl
 								},
 								"fields": [
+								]
+							  }
+							}
+							/*
+							Disabling extended unit stat display...not that useful
+							
+							embedMes["embed"].fields.push(
 								  {
 									"name": "Defense",
 									"value": unit.hp+"+"+unit.regen+"/s HP",
 								  }
-								]
-							  }
-							}
+								);
 							
 							const keys = Object.keys(unit.economy);
 							for (let i = 0; i < keys.length; i++){
 								const field = unit.economy[keys[i]];
 								
-								if (field.constructor === Array){
+								if (field.constructor === Array || field == ""){
 									continue;
 								}
+								
 								embedMes["embed"].fields.push({
 									"name": keys[i],
-									"value": field+" ",	//adding empty stuff to make sure not empty
+									"value": field,	//adding empty stuff to make sure not empty
 									"inline":true
 								});
 							}
@@ -135,7 +145,7 @@ function react(message){
 									"value": abilities.join("\n")
 								});
 							}
-						
+							*/
 						
 						return sendMessage(message.channel, embedMes);
 						
@@ -631,7 +641,7 @@ function react(message){
 					return 1;
 				}
 				break;
-			
+				
 			case "searchplayer":
 				if (argument == null){
 					return false;
@@ -792,9 +802,7 @@ function react(message){
 								if (player.aliases.length > maxAliases){
 									aliasString += "...";
 								}
-								
-								//aliasString = player.aliases.join("\n");
-							}
+ 							}
 							
 							embedMes["embed"].fields.push(
 								  {
@@ -973,22 +981,23 @@ function react(message){
 				}
 				break;
 			case "help":
-				sendMessage(message.author, "Hi there! I have a documentation on our Wiki :slight_smile:. Wiki Article for QAI: https://wiki.faforever.com/index.php?title=Bots_(Discord_QAI).");
+				sendMessage(message.author, "Hi there! I have a documentation on our Wiki :slight_smile:. Wiki Article for QAI: *Link here*.");
 				break;
+				
 			case "rancaps":
-				RandomCaps(message.channel, argument);
+				return randomCaps(message.channel, argument);
 				break;
+				
 			case "chatslap":
 				let victim;
 				if (argument == null) {
-					return false;
+					return;
 				}
 				else {
 					victim = utils.replyToId(argument);
 				}
-				sendMessage(message.channel, "Slaps <@"+victim+"> causing them to lose 5 points.");
-				return true;
-
+				
+				return sendMessage(message.channel, "Slaps <@"+victim+"> causing them to lose 5 points.");
 				break;
 		}
 	}
@@ -996,6 +1005,19 @@ function react(message){
 ////////////
 ///	MAIN BOT BEHAVIOR
 ////////////
+function randomCaps(channel, str){
+	let msg = "";
+
+	for (let i = 0; i < str.length; i++){
+		if(Math.floor(Math.random() * 11) < 6) {
+			msg += str.charAt(i).toUpperCase();
+		} else {
+			msg += str.charAt(i);
+		}
+	}
+
+	return sendMessage(channel, msg);
+}
 function respond(oMessage, rspMsgString, author=null){
 	let string = rspMsgString;
 	oMessage.reply(string);
@@ -1267,39 +1289,25 @@ function isNumeric(str){
 	}
 	return true;     
 }
-
-function RandomCaps(channel, str){
-	let msg = "";
-
-	for (let i = 0; i < str.length; i++){
-		if(Math.floor(Math.random() * 11) < 6) {
-			msg += str.charAt(i).toUpperCase();
-		} else {
-			msg += str.charAt(i);
-		}
-	}
-
-	return sendMessage(channel, msg);
-}
 //...//
 
 
 //EXPORTS FOR SHARED USE
 module.exports = {
-   	react: 
+   react: 
 	function(message){
 		return react(message);
 	},
-   	sendMessage: 
+   sendMessage: 
 	function(channel, msgString){
 		return sendMessage(channel, msgString);
 	},
-   	addPoints: 
+   addPoints: 
 	function(database, userList, int_points){
 		addPoints(database, userList, int_points, function(){});
 	},
     getPoints:
     function(database, userId, function_callback){
         getPoints(database, userId, function_callback);
-    },
+    }
 }
