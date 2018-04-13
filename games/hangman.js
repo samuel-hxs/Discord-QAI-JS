@@ -198,7 +198,7 @@ function handleUserGuess(channel, letter) {
 }
 
 function isGameOn() {
-    utils.log("Running isGameOn");
+   // utils.log("Running isGameOn");
     return b_hGameOn;
 }
 
